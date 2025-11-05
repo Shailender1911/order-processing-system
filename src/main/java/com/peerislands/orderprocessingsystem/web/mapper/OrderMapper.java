@@ -29,7 +29,6 @@ public class OrderMapper {
             .map(this::toOrderItemResponse)
             .toList();
         return new OrderResponse(
-            order.getId(),
             order.getOrderNumber(),
             order.getCustomerName(),
             order.getCustomerEmail(),
