@@ -9,6 +9,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record OrderResponse(
     Long id,
+    String orderNumber,
     String customerName,
     String customerEmail,
     String shippingAddress,

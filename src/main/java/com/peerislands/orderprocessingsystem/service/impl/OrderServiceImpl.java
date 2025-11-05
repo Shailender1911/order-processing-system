@@ -9,6 +9,7 @@ import com.peerislands.orderprocessingsystem.repository.OrderRepository;
 import com.peerislands.orderprocessingsystem.service.OrderService;
 import com.peerislands.orderprocessingsystem.service.command.CreateOrderCommand;
 import com.peerislands.orderprocessingsystem.service.command.CreateOrderItemCommand;
+import com.peerislands.orderprocessingsystem.service.util.OrderNumberGenerator;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
@@ -21,9 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderNumberGenerator orderNumberGenerator;
 
-    public OrderServiceImpl(OrderRepository orderRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, OrderNumberGenerator orderNumberGenerator) {
         this.orderRepository = orderRepository;
+        this.orderNumberGenerator = orderNumberGenerator;
     }
 
     @Override
@@ -32,10 +35,23 @@ public class OrderServiceImpl implements OrderService {
         validateOrderDetails(command);
         validateItems(command.items());
 
-        Order order = new Order(command.customerName(), command.customerEmail(), command.shippingAddress());
+        Order order = new Order(
+            generateUniqueOrderNumber(),
+            command.customerName(),
+            command.customerEmail(),
+            command.shippingAddress()
+        );
         command.items().forEach(itemCommand -> order.addItem(toOrderItem(itemCommand)));
 
         return orderRepository.save(order);
+    }
+
+    private String generateUniqueOrderNumber() {
+        String orderNumber;
+        do {
+            orderNumber = orderNumberGenerator.generate();
+        } while (orderRepository.existsByOrderNumber(orderNumber));
+        return orderNumber;
     }
 
     private void validateOrderDetails(CreateOrderCommand command) {

@@ -30,6 +30,7 @@ public class OrderMapper {
             .toList();
         return new OrderResponse(
             order.getId(),
+            order.getOrderNumber(),
             order.getCustomerName(),
             order.getCustomerEmail(),
             order.getShippingAddress(),

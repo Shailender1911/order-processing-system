@@ -32,6 +32,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "order_number", nullable = false, unique = true, length = 40)
+    private String orderNumber;
+
     @Column(name = "customer_name", nullable = false, length = 150)
     private String customerName;
 
@@ -63,7 +66,8 @@ public class Order {
         // JPA requirement
     }
 
-    public Order(String customerName, String customerEmail, String shippingAddress) {
+    public Order(String orderNumber, String customerName, String customerEmail, String shippingAddress) {
+        this.orderNumber = Objects.requireNonNull(orderNumber, "orderNumber");
         this.customerName = Objects.requireNonNull(customerName, "customerName");
         this.customerEmail = Objects.requireNonNull(customerEmail, "customerEmail");
         this.shippingAddress = Objects.requireNonNull(shippingAddress, "shippingAddress");
@@ -115,6 +119,10 @@ public class Order {
 
     public Long getId() {
         return id;
+    }
+
+    public String getOrderNumber() {
+        return orderNumber;
     }
 
     public String getCustomerName() {

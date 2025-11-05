@@ -35,6 +35,7 @@ class OrderServiceIntegrationTest {
         Order order = orderService.createOrder(sampleCommand());
 
         assertThat(order.getId()).isNotNull();
+        assertThat(order.getOrderNumber()).isNotBlank().startsWith("ORD-");
         assertThat(order.getStatus()).isEqualTo(OrderStatus.PENDING);
         assertThat(order.getTotalAmount()).isEqualByComparingTo(new BigDecimal("40.00"));
         assertThat(order.getItems()).hasSize(2);
@@ -73,6 +74,7 @@ class OrderServiceIntegrationTest {
         int updated = orderService.promotePendingOrders();
 
         Order reloaded = orderService.getOrder(order.getId());
+        assertThat(reloaded.getOrderNumber()).isEqualTo(order.getOrderNumber());
         assertThat(updated).isEqualTo(1);
         assertThat(reloaded.getStatus()).isEqualTo(OrderStatus.PROCESSING);
     }

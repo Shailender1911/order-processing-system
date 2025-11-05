@@ -10,6 +10,7 @@ Backend take-home assignment for PeerIslands. The application exposes a REST API
 
 ## Architecture Overview
 - **Domain layer**: `Order`, `OrderItem`, and `OrderStatus` model the aggregate and encapsulate business rules.
+- **Order identifiers**: Each order receives a human-friendly number (`ORD-YYYYMMDD-XXXXXX`) generated via `OrderNumberGenerator`, in addition to the internal database id.
 - **Service layer**: `OrderService` applies validation, orchestrates persistence, and exposes a dedicated command for order creation.
 - **Web layer**: REST controller with request/response DTOs, validation, and a mapper to isolate transport concerns from the domain.
 - **Scheduler**: `OrderStatusScheduler` promotes all pending orders to processing every 5 minutes.
@@ -55,6 +56,7 @@ POST /api/v1/orders
 ```json
 {
   "id": 1,
+  "orderNumber": "ORD-20251105-1AB2C3",
   "customerName": "Jane Doe",
   "customerEmail": "jane.doe@example.com",
   "shippingAddress": "221B Baker Street, London",
