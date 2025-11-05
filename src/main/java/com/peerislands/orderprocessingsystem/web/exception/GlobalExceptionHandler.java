@@ -1,5 +1,6 @@
 package com.peerislands.orderprocessingsystem.web.exception;
 
+import com.peerislands.orderprocessingsystem.domain.exception.InsufficientInventoryException;
 import com.peerislands.orderprocessingsystem.domain.exception.InvalidOrderStateException;
 import com.peerislands.orderprocessingsystem.domain.exception.OrderNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +31,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleInvalidState(InvalidOrderStateException ex, HttpServletRequest request) {
         ApiError error = ApiError.of(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase(), ex.getMessage(), request.getRequestURI());
         return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(InsufficientInventoryException.class)
+    public ResponseEntity<ApiError> handleInventory(InsufficientInventoryException ex, HttpServletRequest request) {
+        ApiError error = ApiError.of(HttpStatus.CONFLICT.value(), HttpStatus.CONFLICT.getReasonPhrase(), ex.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

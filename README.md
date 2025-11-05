@@ -11,6 +11,7 @@ Backend take-home assignment for PeerIslands. The application exposes a REST API
 ## Architecture Overview
 - **Domain layer**: `Order`, `OrderItem`, and `OrderStatus` model the aggregate and encapsulate business rules.
 - **Order identifiers**: Each order receives a human-friendly identifier (`ORD-YYYYMMDD-XXXXXX`) generated via `OrderNumberGenerator`, which is the only ID exposed through the API.
+- **Inventory management**: `InventoryItem` entities track on-hand and reserved stock per SKU with pessimistic locking so concurrent orders cannot oversell. Reservations are made during order creation, released on cancellation, and committed once the order enters `PROCESSING`.
 - **Service layer**: `OrderService` applies validation, orchestrates persistence, and exposes a dedicated command for order creation.
 - **Web layer**: REST controller with request/response DTOs, validation, and a mapper to isolate transport concerns from the domain.
 - **Scheduler**: `OrderStatusScheduler` promotes all pending orders to processing every 5 minutes.
@@ -20,7 +21,7 @@ Backend take-home assignment for PeerIslands. The application exposes a REST API
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/v1/orders` | Create a new order with one or more items |
+| `POST` | `/api/v1/orders` | Create a new order with one or more items (reserves inventory per SKU) |
 | `GET` | `/api/v1/orders/{id}` | Fetch full order details by id |
 | `GET` | `/api/v1/orders?status=PROCESSING` | List orders, optionally filtered by status |
 | `PATCH` | `/api/v1/orders/{id}/status` | Progress an order to the next status (`PROCESSING`, `SHIPPED`, `DELIVERED`) |
@@ -115,6 +116,7 @@ Integration tests cover order creation, valid/invalid status transitions, cancel
 ## Future Enhancements
 - Add authentication/authorization for admin vs. customer flows.
 - Introduce pagination and sorting for the list endpoint.
+- Inventory admin APIs (CRUD) and asynchronous reservation expiration handling.
 - Move from in-memory H2 to an external database profile (PostgreSQL/MySQL).
 - Add metrics (Micrometer) and tracing for observability.
 

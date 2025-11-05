@@ -10,6 +10,7 @@ import com.peerislands.orderprocessingsystem.service.OrderService;
 import com.peerislands.orderprocessingsystem.service.command.CreateOrderCommand;
 import com.peerislands.orderprocessingsystem.service.command.CreateOrderItemCommand;
 import com.peerislands.orderprocessingsystem.service.util.OrderNumberGenerator;
+import com.peerislands.orderprocessingsystem.service.inventory.InventoryService;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
@@ -23,10 +24,16 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderNumberGenerator orderNumberGenerator;
+    private final InventoryService inventoryService;
 
-    public OrderServiceImpl(OrderRepository orderRepository, OrderNumberGenerator orderNumberGenerator) {
+    public OrderServiceImpl(
+        OrderRepository orderRepository,
+        OrderNumberGenerator orderNumberGenerator,
+        InventoryService inventoryService
+    ) {
         this.orderRepository = orderRepository;
         this.orderNumberGenerator = orderNumberGenerator;
+        this.inventoryService = inventoryService;
     }
 
     @Override
@@ -34,6 +41,7 @@ public class OrderServiceImpl implements OrderService {
         Objects.requireNonNull(command, "CreateOrderCommand must not be null");
         validateOrderDetails(command);
         validateItems(command.items());
+        inventoryService.reserveItems(command.items());
 
         Order order = new Order(
             generateUniqueOrderNumber(),
@@ -107,17 +115,23 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order updateOrderStatus(Long id, OrderStatus targetStatus) {
         Order order = getOrder(id);
+        OrderStatus previousStatus = order.getStatus();
         if (targetStatus == OrderStatus.CANCELLED) {
             throw new InvalidOrderStateException("Use the cancel endpoint to cancel an order");
         }
         order.updateStatus(targetStatus);
-        return orderRepository.save(order);
+        Order updatedOrder = orderRepository.save(order);
+        if (previousStatus == OrderStatus.PENDING && targetStatus == OrderStatus.PROCESSING) {
+            inventoryService.commitReservations(updatedOrder);
+        }
+        return updatedOrder;
     }
 
     @Override
     public Order cancelOrder(Long id) {
         Order order = getOrder(id);
         order.cancel();
+        inventoryService.releaseReservations(order);
         return orderRepository.save(order);
     }
 
@@ -128,6 +142,7 @@ public class OrderServiceImpl implements OrderService {
         for (Order order : pendingOrders) {
             if (order.markProcessing()) {
                 updatedCount++;
+                inventoryService.commitReservations(order);
             }
         }
         if (updatedCount > 0) {
