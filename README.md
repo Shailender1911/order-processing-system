@@ -90,6 +90,11 @@ POST /api/v1/orders
 - `OrderStatusScheduler` runs every 5 minutes (`cron: 0 */5 * * * *`).
 - The job promotes all orders that are still `PENDING` to `PROCESSING`. The scheduler logs the number of orders updated on each run.
 
+## Database Profiles
+
+- **MySQL (default)**: `spring.profiles.default=mysql`. Update `application-mysql.properties` with your credentials (defaults assume `jdbc:mysql://localhost:3306/orders`, user `root`, password `changeme`). The schema must already exist.
+- **H2 in-memory**: Activate with `SPRING_PROFILES_ACTIVE=h2` (or `--spring.profiles.active=h2`). Suitable for quick demos and automated tests; seeded data lives in `data-h2.sql`.
+
 ## Running the Application
 
 ```bash
@@ -97,7 +102,11 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home
 ./mvnw spring-boot:run
 ```
 
-The API listens on `http://localhost:8080`.
+The API listens on `http://localhost:8080`. To switch to H2:
+
+```bash
+SPRING_PROFILES_ACTIVE=h2 ./mvnw spring-boot:run
+```
 
 ### H2 Console
 - Enabled at `http://localhost:8080/h2-console`
