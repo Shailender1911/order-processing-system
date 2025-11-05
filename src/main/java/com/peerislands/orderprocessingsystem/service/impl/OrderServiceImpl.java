@@ -102,8 +102,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public Order getOrder(Long id) {
-        return orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
+    public Order getOrder(String orderNumber) {
+        return orderRepository.findByOrderNumber(orderNumber)
+            .orElseThrow(() -> new OrderNotFoundException("Order %s not found".formatted(orderNumber)));
     }
 
     @Override
@@ -113,8 +114,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order updateOrderStatus(Long id, OrderStatus targetStatus) {
-        Order order = getOrder(id);
+    public Order updateOrderStatus(String orderNumber, OrderStatus targetStatus) {
+        Order order = getOrder(orderNumber);
         OrderStatus previousStatus = order.getStatus();
         if (targetStatus == OrderStatus.CANCELLED) {
             throw new InvalidOrderStateException("Use the cancel endpoint to cancel an order");
@@ -128,8 +129,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order cancelOrder(Long id) {
-        Order order = getOrder(id);
+    public Order cancelOrder(String orderNumber) {
+        Order order = getOrder(orderNumber);
         order.cancel();
         inventoryService.releaseReservations(order);
         return orderRepository.save(order);

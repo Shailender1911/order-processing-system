@@ -41,9 +41,9 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderMapper.toResponse(order));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {
-        Order order = orderService.getOrder(id);
+    @GetMapping("/{orderId}")
+    public ResponseEntity<OrderResponse> getOrder(@PathVariable String orderId) {
+        Order order = orderService.getOrder(orderId);
         return ResponseEntity.ok(orderMapper.toResponse(order));
     }
 
@@ -53,15 +53,15 @@ public class OrderController {
         return ResponseEntity.ok(orderMapper.toResponse(orders));
     }
 
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<OrderResponse> updateStatus(@PathVariable Long id, @Valid @RequestBody UpdateOrderStatusRequest request) {
-        Order order = orderService.updateOrderStatus(id, request.status());
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<OrderResponse> updateStatus(@PathVariable String orderId, @Valid @RequestBody UpdateOrderStatusRequest request) {
+        Order order = orderService.updateOrderStatus(orderId, request.status());
         return ResponseEntity.ok(orderMapper.toResponse(order));
     }
 
-    @PostMapping("/{id}/cancel")
-    public ResponseEntity<OrderResponse> cancelOrder(@PathVariable Long id) {
-        Order order = orderService.cancelOrder(id);
+    @PostMapping("/{orderId}/cancel")
+    public ResponseEntity<OrderResponse> cancelOrder(@PathVariable String orderId) {
+        Order order = orderService.cancelOrder(orderId);
         return ResponseEntity.ok(orderMapper.toResponse(order));
     }
 }

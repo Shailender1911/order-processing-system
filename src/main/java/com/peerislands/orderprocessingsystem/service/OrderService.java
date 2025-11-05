@@ -10,13 +10,13 @@ public interface OrderService {
 
     Order createOrder(CreateOrderCommand command);
 
-    Order getOrder(Long id);
+    Order getOrder(String orderNumber);
 
     List<Order> getOrders(Optional<OrderStatus> statusFilter);
 
-    Order updateOrderStatus(Long id, OrderStatus targetStatus);
+    Order updateOrderStatus(String orderNumber, OrderStatus targetStatus);
 
-    Order cancelOrder(Long id);
+    Order cancelOrder(String orderNumber);
 
     int promotePendingOrders();
 }

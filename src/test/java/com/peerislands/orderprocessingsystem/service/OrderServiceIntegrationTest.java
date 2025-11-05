@@ -60,7 +60,7 @@ class OrderServiceIntegrationTest {
     void updateOrderStatus_allowsValidTransition() {
         Order order = orderService.createOrder(sampleCommand());
 
-        Order updated = orderService.updateOrderStatus(order.getId(), OrderStatus.PROCESSING);
+        Order updated = orderService.updateOrderStatus(order.getOrderNumber(), OrderStatus.PROCESSING);
 
         assertThat(updated.getStatus()).isEqualTo(OrderStatus.PROCESSING);
         assertThat(inventoryRepository.findByProductCode("SKU-123").orElseThrow().getReservedQuantity())
@@ -73,7 +73,7 @@ class OrderServiceIntegrationTest {
     void updateOrderStatus_rejectsInvalidTransition() {
         Order order = orderService.createOrder(sampleCommand());
 
-        assertThatThrownBy(() -> orderService.updateOrderStatus(order.getId(), OrderStatus.DELIVERED))
+        assertThatThrownBy(() -> orderService.updateOrderStatus(order.getOrderNumber(), OrderStatus.DELIVERED))
             .isInstanceOf(InvalidOrderStateException.class);
     }
 
@@ -81,7 +81,7 @@ class OrderServiceIntegrationTest {
     void cancelOrder_marksOrderAsCancelled() {
         Order order = orderService.createOrder(sampleCommand());
 
-        Order cancelled = orderService.cancelOrder(order.getId());
+        Order cancelled = orderService.cancelOrder(order.getOrderNumber());
 
         assertThat(cancelled.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         assertThat(inventoryRepository.findByProductCode("SKU-123").orElseThrow().getReservedQuantity())
@@ -96,7 +96,7 @@ class OrderServiceIntegrationTest {
 
         int updated = orderService.promotePendingOrders();
 
-        Order reloaded = orderService.getOrder(order.getId());
+        Order reloaded = orderService.getOrder(order.getOrderNumber());
         assertThat(reloaded.getOrderNumber()).isEqualTo(order.getOrderNumber());
         assertThat(updated).isEqualTo(1);
         assertThat(reloaded.getStatus()).isEqualTo(OrderStatus.PROCESSING);
